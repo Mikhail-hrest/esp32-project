@@ -1,0 +1,61 @@
+#include <WiFi.h>
+#include <WiFiClientSecure.h>
+#include <UniversalTelegramBot.h>
+#include <ArduinoJson.h>
+
+const char* ssid = "Espiha";//"Beeline_5G_F44229";
+const char* password = "11111111";//"mueYaYPD";
+bool detected = false;
+
+#define BOTtoken "6299514265:AAEXuVBA3qJcV5TbWg9bjRABuUYTKxmVXzU"
+#define CHAT_ID "1148334673"
+const int inp_sign = 12;
+const int out_sign = 14;
+const int zoom_pin = 27;
+
+WiFiClientSecure client;
+UniversalTelegramBot bot(BOTtoken, client);
+
+void IRAM_ATTR detectsMove(){
+  detected = true;
+}
+
+void setup() {
+  Serial.begin(115200);
+  client.setInsecure();
+
+  pinMode(out_sign, OUTPUT);
+  pinMode(zoom_pin, OUTPUT);
+  pinMode(inp_sign, INPUT);
+  digitalWrite(out_sign, HIGH);
+  attachInterrupt(digitalPinToInterrupt(inp_sign), detectsMove, RISING);
+
+  Serial.print("Connecting Wifi: ");
+  Serial.println(ssid);
+
+  WiFi.begin(ssid, password);
+  client.setCACert(TELEGRAM_CERTIFICATE_ROOT);
+
+  while(WiFi.status() != WL_CONNECTED){
+    Serial.print(".");
+    delay(500);
+  }
+
+  Serial.println("");
+  Serial.println("WiFi соединение установлено");
+  Serial.print("IP адресс: ");
+  Serial.println(WiFi.localIP());
+
+  bot.sendMessage(CHAT_ID, "Bot стартовал", "");
+}
+
+void loop() {
+  if(detected){
+    bot.sendMessage(CHAT_ID, "Motion detected!!", "");
+    Serial.println("Motion Detected");
+    digitalWrite(zoom_pin, HIGH);
+    delay(150);
+    digitalWrite(zoom_pin, LOW);
+    detected = false;
+  }
+}
