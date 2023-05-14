@@ -52,9 +52,9 @@ void loop()
   if(digitalRead(14) == HIGH){
     digitalWrite(27, HIGH);
     bot.sendMessage("1148334673", "Замечено движение", "");
-    delay(5000);
+    while(digitalRead(14) == HIGH);
+    //delay(3000);
   }else{
     digitalWrite(27, LOW);
   }
-  delay(150);
 }
